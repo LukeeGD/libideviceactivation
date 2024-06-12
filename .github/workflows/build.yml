@@ -1,9 +1,7 @@
 name: build
 
 on:
-  push:
-  schedule:
-    - cron: '0 0 1 * *'
+  push
 
 jobs:
   build-linux-ubuntu:
@@ -36,7 +34,7 @@ jobs:
         github_token: ${{secrets.GITHUB_TOKEN}}
         workflow: build.yml
         name: libimobiledevice-glue-latest_${{env.target_triplet}}
-        repo: libimobiledevice/libimobiledevice-glue
+        repo: LukeeGD/libimobiledevice-glue
     - name: fetch libimobiledevice
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -96,7 +94,7 @@ jobs:
         github_token: ${{secrets.GITHUB_TOKEN}}
         workflow: build.yml
         name: libusbmuxd-latest_macOS
-        repo: libimobiledevice/libusbmuxd
+        repo: LukeeGD/libusbmuxd
     - name: fetch libimobiledevice-glue
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -154,90 +152,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: libideviceactivation-latest_macOS
-        path: libideviceactivation.tar
-  build-windows:
-    runs-on: windows-2019
-    defaults:
-      run:
-        shell: msys2 {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        include: [
-          { msystem: MINGW64, arch: x86_64 },
-          { msystem: MINGW32, arch: i686   }
-        ]
-    steps:
-    - uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.msystem }}
-        release: false
-        update: false
-        install: >-
-          base-devel
-          git
-          mingw-w64-${{ matrix.arch }}-gcc
-          make
-          libtool
-          autoconf
-          automake-wrapper
-    - name: prepare environment
-      run: |
-          dest=`echo ${{ matrix.msystem }} |tr [:upper:] [:lower:]`
-          echo "dest=$dest" >> $GITHUB_ENV
-          echo "target_triplet=`gcc -dumpmachine`" >> $GITHUB_ENV
-    - name: fetch libplist
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: build.yml
-        name: libplist-latest_${{ matrix.arch }}-${{ env.dest }}
-        repo: libimobiledevice/libplist
-    - name: fetch libusbmuxd
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: build.yml
-        name: libusbmuxd-latest_${{ matrix.arch }}-${{ env.dest }}
-        repo: libimobiledevice/libusbmuxd
-    - name: fetch libimobiledevice-glue
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: build.yml
-        name: libimobiledevice-glue-latest_${{ matrix.arch }}-${{ env.dest }}
-        repo: libimobiledevice/libimobiledevice-glue
-    - name: fetch libimobiledevice
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: build.yml
-        name: libimobiledevice-latest_${{ matrix.arch }}-${{ env.dest }}
-        repo: libimobiledevice/libimobiledevice
-    - name: install external dependencies
-      run: |
-          mkdir extract
-          for I in *.tar; do
-            tar -C extract -xvf $I
-          done
-          cp -r extract/* /
-    - uses: actions/checkout@v2
-    - name: install additional requirements
-      run: |
-          #
-    - name: autogen
-      run: ./autogen.sh CC=gcc CXX=g++
-    - name: make
-      run: make
-    - name: make install
-      run: make install
-    - name: prepare artifact
-      run: |
-          mkdir -p dest
-          DESTDIR=`pwd`/dest make install
-          tar -C dest -cf libideviceactivation.tar ${{ env.dest }}
-    - name: publish artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: libideviceactivation-latest_${{ matrix.arch }}-${{ env.dest }}
         path: libideviceactivation.tar
