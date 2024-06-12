@@ -21,7 +21,7 @@ jobs:
         github_token: ${{secrets.GITHUB_TOKEN}}
         workflow: build.yml
         name: libplist-latest_macOS
-        repo: libimobiledevice/libplist
+        repo: LukeeGD/libplist
     - name: fetch libusbmuxd
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -42,7 +42,7 @@ jobs:
         github_token: ${{secrets.GITHUB_TOKEN}}
         workflow: build.yml
         name: libimobiledevice-latest_macOS
-        repo: libimobiledevice/libimobiledevice
+        repo: LukeeGD/libimobiledevice
     - name: install external dependencies
       run: |
           mkdir extract
